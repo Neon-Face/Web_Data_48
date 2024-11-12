@@ -1,0 +1,11 @@
+.cache
+.dotnet
+.vscode-server
+.bash*
+.profile
+.python_history
+.sudo*
+.viminfo
+models
+venv
+.gitconfig
