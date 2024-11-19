@@ -1,5 +1,4 @@
-# ##Remove Stop words and Perform Text Normalization
-
+# Remove Stop words and Perform Text Normalization
 import nltk
 from nltk.corpus import stopwords
 import en_core_web_sm
