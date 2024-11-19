@@ -78,7 +78,7 @@ def preprocess_text(text):
     # Process tokens
     processed_tokens = []
     for token in doc:
-        # Convert numbers to words
+        # Convert numbers to words and lemmatize
         token_text = n2w(token.text) if token.like_num else token.lemma_
 
         # Check if token should be included

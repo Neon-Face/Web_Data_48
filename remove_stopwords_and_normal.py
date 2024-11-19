@@ -13,7 +13,8 @@ def necessary_download():
 
 
 # Remove stopwords using NLTK
-def stop_words(stops, tokens):        
+def stop_words(tokens):    
+    stops = set(stopwords.words('english'))    
     filtered_sentence = [] 
     
     # remove stop words from given tokens
