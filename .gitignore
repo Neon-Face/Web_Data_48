@@ -9,3 +9,8 @@
 models
 venv
 .gitconfig
+nltk_data
+.venv
+__pycache__
+target
+.lesshst
