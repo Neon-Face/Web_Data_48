@@ -5,10 +5,14 @@ nltk.download('words')
 nltk.download('punkt')
 
 import spacy
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_trf")
 
 import os
 import argparse
+import wikidata
+from sklearn.metrics.pairwise import cosine_similarity
+from difflib import SequenceMatcher
+import numpy as np
 from llama_cpp import Llama
 from timeit import default_timer as timer
 model_path = "models/llama-2-7b.Q4_K_M.gguf"
@@ -33,25 +37,56 @@ llm = Llama(model_path=model_path, verbose=False, n_gpu_layers=-1 if args.gpu el
 output = llm(args.input, max_tokens=32, stop=["Q:", "Question:", "Context:"], echo=False)
 end = timer()
 
-print(output['choices'][0]['text'])
+output_txt = output['choices'][0]['text']
+print(output_txt)
 if args.debug:
     print(f"Question LLM time: {end - start}")
 
-doc = nlp(args.input)
-entities = [(ent.text, ent.label_) for ent in doc.ents]
-entity_names = [entity[0] for entity in entities]
+doc = nlp(output_txt)
+base_entities = [(ent.text, ent.label_) for ent in doc.ents]
+entity_names = [entity[0] for entity in base_entities]
+entities = []
 
 ENTITY_LABELS = ["GPE", "NNP", "ORGANIZATION", "PERSON", "LOCATION"]
 
-ne_tree = nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(args.input)))
+for entity in base_entities:
+    if entity[1] in ENTITY_LABELS:
+        entities.append(entity)
+
+ne_tree = nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(output_txt)))
 for tree in ne_tree:
     if isinstance(tree, nltk.tree.Tree):
         name = " ".join([t[0] for t in tree])
         if tree[0] in ENTITY_LABELS and name not in entity_names:
-            entities.append((name, tree.label()))
+            base_entities.append((name, tree.label()))
     elif tree[1] in ENTITY_LABELS and tree[0] not in entity_names:
-        entities.append((tree[0], tree[1]))
+        base_entities.append((tree[0], tree[1]))
 
 if args.debug:
     print("Entities:", entities)
+
+def disambiguate(context, ambiguous_term, labels):
+    doc = nlp(context)
+    for entity in doc.ents:
+        if entity.text == ambiguous_term:
+            scores = {label: doc.similarity(nlp(label)) for label in labels}
+            return max(scores, key=scores.get)
+for entity in entities:
+    wikidata_entities = wikidata.get_wikidata_id(entity[0])
+    # for item in wikidata_entities:
+    #     if item[1].lower() == entity[0].lower():
+    #         print(f"Entity: {entity[0]} - Wikidata ID: {item[0]} {item[2]}")
+    #     else:
+    #         print(f"Entity: {entity[0]} - Wikidata ID: {item[0]} {item[2]} (Name mismatch)")
+
+    # print(list(map(lambda x: x[1], wikidata_entities)))
+    # ranked_entities = rank_candidates(args.input + " " + output_txt, list(map(lambda x: x[2], wikidata_entities)))
+    # print(ranked_entities)
+    # print("Ranked Candidates:")
+    # for candidate, score in ranked_entities:
+    #     print(f"{candidate}: {score}")
+
+    disambiguated_entity = disambiguate(output_txt, entity[0], list(map(lambda x: x[1], wikidata_entities)))
+
+    print(f"Disambiguated Entity: {disambiguated_entity}")
 
