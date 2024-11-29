@@ -8,9 +8,9 @@ import spacy
 nlp = spacy.load("en_core_web_sm")
 
 from sentence_transformers import SentenceTransformer, util
-model = SentenceTransformer('all-MiniLM-L12-v2')
+model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')
 
-def get_wikidata_id(entity):
+def search_wikidata(entity):
 	url = "https://www.wikidata.org/w/api.php"
 	params = {
 		"action": "wbsearchentities",
@@ -75,7 +75,7 @@ def similarity(a, b):
 
 def disambiguate(entity: str, question: str, debug: bool = False) -> tuple[str, str, str]:
 	start = timer()
-	wikidata_entities = get_wikidata_id(entity)
+	wikidata_entities = search_wikidata(entity)
 
 	if wikidata_entities is None:
 		raise ValueError(f"Entity {entity} not found in Wikidata")

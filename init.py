@@ -6,4 +6,4 @@ nltk.download('punkt')
 nltk.download('punkt_tab')
 
 from sentence_transformers import SentenceTransformer
-model = SentenceTransformer('all-MiniLM-L12-v2')
+model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')

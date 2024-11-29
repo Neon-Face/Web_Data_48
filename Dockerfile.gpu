@@ -1,0 +1,26 @@
+FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04 AS base
+
+WORKDIR /app
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update && apt upgrade -y && apt install git build-essential gcc wget ocl-icd-opencl-dev opencl-headers clinfo libclblast-dev libopenblas-dev python3 python3-pip -y
+RUN mkdir -p /etc/OpenCL/vendors && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
+RUN pip install uv
+RUN uv venv
+ENV CUDA_DOCKER_ARCH=all
+ENV GGML_CUDA=1
+RUN CMAKE_ARGS="-DGGML_CUDA=ON" FORCE_CMAKE=1 uv pip install llama_cpp_python
+RUN uv pip install torch sentence-transformers spacy nltk requests
+RUN uv pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
+
+FROM python:3.10-slim-bookworm
+WORKDIR /app
+COPY --from=base /app/.venv .venv
+COPY init.py init.py
+RUN rm .venv/bin/python
+RUN ln -s /usr/local/bin/python .venv/bin/python
+RUN .venv/bin/python init.py
+
+COPY main.py main.py
+COPY common.py common.py
+
+ENTRYPOINT [".venv/bin/python", "main.py"]
