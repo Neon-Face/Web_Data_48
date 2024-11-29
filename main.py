@@ -1,22 +1,17 @@
-import nltk
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('maxent_ne_chunker_tab')
-nltk.download('words')
-nltk.download('punkt')
-
-import spacy
-nlp = spacy.load("en_core_web_sm")
-
 import os
 import argparse
+import common
 from llama_cpp import Llama
 from timeit import default_timer as timer
 model_path = "models/llama-2-7b.Q4_K_M.gguf"
 
+if os.getenv('INIT') == "1":
+    import init
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, help="Model path", required=False)
 parser.add_argument("--gpu", action="store_true", help="Run with nvidia GPU", required=False)
-parser.add_argument("--input", type=str, help="Input question. Either a string or a file path", required=True)
+parser.add_argument("--input", type=str, help="Input question. Either a single quesiton as a string, or a file path in the expected format", required=True)
 parser.add_argument("--debug", action="store_true", help="Debug mode", required=False)
 
 args = parser.parse_args()
@@ -26,32 +21,46 @@ if args.model is not None and len(args.model) > 0:
 
 if os.path.exists(args.input):
     with open(args.input, "r") as f:
-        args.input = f.read()
+        args.input = common.extract_questions(f.read())
+else:
+    args.input = [('question-001', args.input)]
 
 start = timer()
 llm = Llama(model_path=model_path, verbose=False, n_gpu_layers=-1 if args.gpu else 0)
-output = llm(args.input, max_tokens=32, stop=["Q:", "Question:", "Context:"], echo=False)
 end = timer()
 
-print(output['choices'][0]['text'])
 if args.debug:
-    print(f"Question LLM time: {end - start}")
+    print(f"LLM loading time: {end - start}")
 
-doc = nlp(args.input)
-entities = [(ent.text, ent.label_) for ent in doc.ents]
-entity_names = [entity[0] for entity in entities]
+for question_id, question in args.input:
+    if args.debug:
+        print(f"Question: {question}")
 
-ENTITY_LABELS = ["GPE", "NNP", "ORGANIZATION", "PERSON", "LOCATION"]
+    start = timer()
+    output = llm(question, max_tokens=64, stop=["Q:", "Question:", "Context:"], echo=False)
+    end = timer()
 
-ne_tree = nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(args.input)))
-for tree in ne_tree:
-    if isinstance(tree, nltk.tree.Tree):
-        name = " ".join([t[0] for t in tree])
-        if tree[0] in ENTITY_LABELS and name not in entity_names:
-            entities.append((name, tree.label()))
-    elif tree[1] in ENTITY_LABELS and tree[0] not in entity_names:
-        entities.append((tree[0], tree[1]))
+    output_txt = output['choices'][0]['text'].strip()
+    print(f"{question_id}\tR\"{output_txt}\"")
+    print(f"{question_id}\tA\"unknown\"")
+    print(f"{question_id}\tC\"unknown\"")
+    if args.debug:
+        print(f"Question LLM time: {end - start}")
 
-if args.debug:
-    print("Entities:", entities)
+    question_entities = common.extract_entities(question, args.debug)
+    answer_entities = common.extract_entities(output_txt, args.debug)
+    entities = list({t[0]: t for t in question_entities + answer_entities}.values())
+    if args.debug:
+        print("Final entities:", entities)
 
+    wikipedia_urls = []
+    for entity in entities:
+        try:
+            disambiguated_entity = common.disambiguate(entity[0], question, args.debug)
+            wikipedia_url = common.get_wikipedia_url(disambiguated_entity[0], args.debug)
+
+            if wikipedia_url is not None and wikipedia_url not in wikipedia_urls:
+                wikipedia_urls.append(wikipedia_url)
+                print(f"{question_id}\tE\"{disambiguated_entity[1]}\"\t\"{wikipedia_url}\"")
+        except:
+            print(f"{question_id}\tE\"{entity[0]}\"\t\"unknown\"")
