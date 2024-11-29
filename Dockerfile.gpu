@@ -9,8 +9,8 @@ RUN uv venv
 ENV CUDA_DOCKER_ARCH=all
 ENV GGML_CUDA=1
 RUN CMAKE_ARGS="-DGGML_CUDA=ON" FORCE_CMAKE=1 uv pip install llama_cpp_python
-RUN uv pip install torch sentence-transformers spacy nltk requests
-RUN uv pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
+COPY requirements.txt requirements.txt
+RUN uv pip install -r requirements.txt
 
 FROM python:3.10-slim-bookworm
 WORKDIR /app

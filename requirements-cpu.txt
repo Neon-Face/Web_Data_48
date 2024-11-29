@@ -1,10 +1,14 @@
+--index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://pypi.org/simple
 llama_cpp_python==0.3.2
 sentence-transformers==3.3.1
 torch==2.5.1
 spacy==3.8.2
 nltk==3.9.1
 requests==2.32.3
-torch==2.5.1
-torchaudio==2.5.1+cpu
-torchvision==0.20.1+cpu
+scikit-learn==1.5.2
+num2words==0.5.13
+pyspellchecker==0.8.1
+thefuzz==0.22.1
+torch==2.5.1+cpu
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85

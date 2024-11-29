@@ -13,6 +13,7 @@ parser.add_argument("--model", type=str, help="Model path", required=False)
 parser.add_argument("--gpu", action="store_true", help="Run with nvidia GPU", required=False)
 parser.add_argument("--input", type=str, help="Input question. Either a single quesiton as a string, or a file path in the expected format", required=True)
 parser.add_argument("--debug", action="store_true", help="Debug mode", required=False)
+parser.add_argument("--basic-d", action="store_true", help="Basic entity disambiguation mode", required=False)
 
 args = parser.parse_args()
 
@@ -37,7 +38,7 @@ for question_id, question in args.input:
         print(f"Question: {question}")
 
     start = timer()
-    output = llm(question, max_tokens=64, stop=["Q:", "Question:", "Context:"], echo=False)
+    output = llm(question, max_tokens=32, stop=["Q:", "Question:", "Context:", "?"], echo=False)
     end = timer()
 
     output_txt = output['choices'][0]['text'].strip()
@@ -47,6 +48,8 @@ for question_id, question in args.input:
     if args.debug:
         print(f"Question LLM time: {end - start}")
 
+    question_processed = common.preprocess_text(question)
+    answer_processed = common.preprocess_text(output_txt)
     question_entities = common.extract_entities(question, args.debug)
     answer_entities = common.extract_entities(output_txt, args.debug)
     entities = list({t[0]: t for t in question_entities + answer_entities}.values())
@@ -55,12 +58,27 @@ for question_id, question in args.input:
 
     wikipedia_urls = []
     for entity in entities:
+        start = timer()
         try:
-            disambiguated_entity = common.disambiguate(entity[0], question, args.debug)
-            wikipedia_url = common.get_wikipedia_url(disambiguated_entity[0], args.debug)
+            wikidata = common.search_wikidata(entity[0].strip())
+            if wikidata is None:
+                raise ValueError(f"Entity {entity} not found in Wikidata")
 
+            if args.basic_d:
+                candidates = common.rank_candidates_basic(entity[0].strip(), f"{question_processed}? {answer_processed}", wikidata)
+                e = max(candidates, key=lambda x: x[1].item())
+                e = next(x for x in wikidata if e[0] == x["id"])
+            else:
+                e = common.disambiguate_with_model(entity[0], question, wikidata)
+
+            wikipedia_url = common.get_wikipedia_url(e["id"], wikidata)
             if wikipedia_url is not None and wikipedia_url not in wikipedia_urls:
                 wikipedia_urls.append(wikipedia_url)
-                print(f"{question_id}\tE\"{disambiguated_entity[1]}\"\t\"{wikipedia_url}\"")
+                label = e["label"]
+                print(f"{question_id}\tE\"{label}\"\t\"{wikipedia_url}\"")
         except:
             print(f"{question_id}\tE\"{entity[0]}\"\t\"unknown\"")
+
+        end = timer()
+        if args.debug:
+            print(f"Entity disambiguation time: {end - start}")
