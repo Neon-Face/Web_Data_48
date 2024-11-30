@@ -1,7 +1,7 @@
 # WDPS
 
 ## Docker
-Example with llama-2-7b.Q4_K_M.gguf model and input.txt in the CWD, attach them as volumes. Pass `--gpu` to run the model on an nvidia GPU.
+Example with llama-2-7b.Q4_K_M.gguf model and input.txt in the CWD, attach them as volumes. Pass `--gpu` to run the model on a GPU.
 
 CPU image:
 ```
@@ -15,11 +15,13 @@ docker run --gpus=all --rm -v ./llama-2-7b.Q4_K_M.gguf:/llama-2-7b.Q4_K_M.gguf -
 
 ## Direct
 * Clone the repository, and install using the provided `requirements.txt`.
+* Run init.py once to perform some other initialization activities.
 * Use `requirements-cpu.txt` to install the CPU only version of pytorch.
 * Installing `llama_cpp_python` with gpu requires running `CMAKE_ARGS="-DGGML_CUDA=ON" FORCE_CMAKE=1 pip install llama_cpp_python`. (Consult the repo [here](https://github.com/abetlen/llama-cpp-python?tab=readme-ov-file#supported-backends) for other backend support).
-* Pass `--gpu` to run the model on an nvidia GPU.
+* Pass `--gpu` to run the model on a GPU.
 ```
 pip install -r requirements.txt
+python init.py
 ```
 Running:
 ```

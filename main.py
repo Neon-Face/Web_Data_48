@@ -14,6 +14,7 @@ parser.add_argument("--gpu", action="store_true", help="Run with nvidia GPU", re
 parser.add_argument("--input", type=str, help="Input question. Either a single quesiton as a string, or a file path in the expected format", required=True)
 parser.add_argument("--debug", action="store_true", help="Debug mode", required=False)
 parser.add_argument("--basic-d", action="store_true", help="Basic entity disambiguation mode", required=False)
+parser.add_argument("--no-ask", type=str, help="The string given here is assumed to be the LLM output", required=False)
 
 args = parser.parse_args()
 
@@ -38,7 +39,10 @@ for question_id, question in args.input:
         print(f"Question: {question}")
 
     start = timer()
-    output = llm(question, max_tokens=32, stop=["Q:", "Question:", "Context:", "?"], echo=False)
+    if args.no_ask is not None and len(args.no_ask) > 0:
+        output = {"choices": [{"text": args.no_ask }]}
+    else:
+        output = llm(question, max_tokens=32, stop=["Q:", "Question:", "Context:", "?"], echo=False)
     end = timer()
 
     output_txt = output['choices'][0]['text'].strip()
@@ -53,8 +57,6 @@ for question_id, question in args.input:
     question_entities = common.extract_entities(question, args.debug)
     answer_entities = common.extract_entities(output_txt, args.debug)
     entities = list({t[0]: t for t in question_entities + answer_entities}.values())
-    if args.debug:
-        print("Final entities:", entities)
 
     wikipedia_urls = []
     for entity in entities:

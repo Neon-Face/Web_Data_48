@@ -78,7 +78,10 @@ def extract_entities(text: str, debug: bool = False) -> list[tuple[str, str]]:
 	entities = []
 
 	base_entities = list({t[0]: t for t in base_entities}.values())
-	ENTITY_LABELS = ["GPE", "NNP", "ORGANIZATION", "ORG", "PERSON", "LOCATION"]
+	ENTITY_LABELS = ["GPE", "ORGANIZATION", "ORG", "PERSON", "LOCATION"]
+
+	if debug:
+		print("Initial entities:", base_entities)
 
 	entity_names = []
 	for entity in base_entities:
@@ -86,18 +89,23 @@ def extract_entities(text: str, debug: bool = False) -> list[tuple[str, str]]:
 			entities.append(entity)
 			entity_names.append(entity[0])
 
+	if debug:
+		print("Filtered names:", entities)
+
 	ne_tree = nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(text)))
+	if debug:
+		print("NER tree:", ne_tree)
 	for tree in ne_tree:
 		if isinstance(tree, nltk.tree.Tree):
 			name = " ".join([t[0] for t in tree])
-			if tree[0][1] in ENTITY_LABELS and name not in entity_names:
+			if tree.label() in ENTITY_LABELS and name not in entity_names:
 				entities.append((name, tree.label()))
 		elif tree[1] in ENTITY_LABELS and tree[0] not in entity_names:
 			entities.append((tree[0], tree[1]))
 	end = timer()
 
 	if debug:
-		print(f"NER time: {end - start}")
+		print(f"Extract time: {end - start}")
 		print("Entities:", entities)
 	return entities
 
@@ -192,7 +200,6 @@ def preprocess_text(text):
 	doc = nlp(text)
 	processed_tokens = []
 	for token in doc:
-        # token_text = token.lemma_
 		token_text = n2w(token.text) if token.like_num else token.lemma_
 		if (not token.is_stop or token.text.lower() in keep_words
             and not token.is_punct
