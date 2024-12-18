@@ -28,5 +28,7 @@ Running:
 python main.py --model ./llama-2-7b.Q4_K_M.gguf --input ./input.txt
 ```
 
-## Running modes
-Two Entity disambiguation modes exist. By default disambiguation is done with a tiny pretrained ML model. Otherwise, `--basic-d` can be passed to disambiguate using traditional text similarity and scoring techniques.
+## Important runtime arguments
+* `--two-stage` Runs with the two stage RAG, where the output from first embedding stage is used to extract entities to fetch and insert more embeddings.
+* `--answer` Apart from the R,A,C,E outputs, also prints a "VA" answer, the "Verified" answer.
+* Use `--help` to view all other arguments
