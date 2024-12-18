@@ -3,4 +3,25 @@ question-002	Question: Is it true that that China is the country with most peopl
 question-003	The largest company in the world by revenue is Apple
 question-004	Question: Who is the director of Pulp Fiction? Answer: 
 question-005	Question: Is it true that the monarch of England is also the monarch of Canada? Answer: 
-
+question-006	What state is the largest state of the United States of America?
+question-007	Is Paris the capital of France?
+question-008	Is Mount Everest the tallest mountain on Earth?
+question-009	Is the sun closer to Earth than the moon?
+question-010	Is Tokyo in China?
+question-011	Does water boil at 100°C at sea level?
+question-012	Who is the author of "Pride and Prejudice"?
+question-013	What is the largest mammal on Earth?
+question-014	Which planet is known as the Red Planet?
+question-015	Who painted the Mona Lisa?
+question-016	What is the currency of Japan?
+question-017	What is the capital of Italy?
+question-018	Name the river that flows through London.
+question-019	Which country is known as the Land of the Rising Sun?
+question-020	Who is the current president of the United States?
+question-021	What is the largest desert in the world?
+question-022	Is the Eiffel Tower in New York?
+question-023    Does Australia have kangaroos?
+question-024	Is Python a type of snake?
+question-025	Name the largest planet in our solar system.
+question-026	Who was the first person to walk on the moon?
+question-027	Is milk naturally blue?
