@@ -43,9 +43,9 @@ parser.add_argument("--model", type=str, help="Model path", required=False)
 parser.add_argument("--gpu", action="store_true", help="Run with nvidia GPU", required=False)
 parser.add_argument("--input", type=str, help="Input question. Either a single quesiton as a string, or a file path in the expected format", required=False)
 parser.add_argument("--debug", action="store_true", help="Debug mode", required=False)
-parser.add_argument("--runtime", action="store_true", help="Debug mode", required=False)
+parser.add_argument("--runtime", action="store_true", help="Prints time taken to run each step", required=False)
 # parser.add_argument("--basic-d", action="store_true", help="Basic entity disambiguation mode", required=False)
-parser.add_argument("--two-stage", action="store_true", help="Two stage RAG mode", required=False)
+parser.add_argument("--disable-two-stage", action="store_true", help="Two stage RAG mode", required=False, default=True)
 parser.add_argument("--two-stage-entity-count", type=int, help="Maximum entities to extract in second RAG stage", required=False, default=3)
 parser.add_argument("--no-ask", type=str, help="The string given here is assumed to be initial the LLM output", required=False)
 parser.add_argument("--answer", action="store_true", help="Print the verification answer", required=False)
@@ -135,7 +135,7 @@ def run_question(question_id, question):
 
     top_results = [documents[i] for i in indices[0]]
 
-    if args.two_stage:
+    if not args.disable_two_stage:
         new_entites = []
         for item in top_results:
             for e in common.extract_entities(item):
