@@ -45,7 +45,7 @@ parser.add_argument("--input", type=str, help="Input question. Either a single q
 parser.add_argument("--debug", action="store_true", help="Debug mode", required=False)
 parser.add_argument("--runtime", action="store_true", help="Prints time taken to run each step", required=False)
 # parser.add_argument("--basic-d", action="store_true", help="Basic entity disambiguation mode", required=False)
-parser.add_argument("--disable-two-stage", action="store_true", help="Two stage RAG mode", required=False, default=True)
+parser.add_argument("--disable-two-stage", action="store_true", help="Two stage RAG mode", required=False)
 parser.add_argument("--two-stage-entity-count", type=int, help="Maximum entities to extract in second RAG stage", required=False, default=3)
 parser.add_argument("--no-ask", type=str, help="The string given here is assumed to be initial the LLM output", required=False)
 parser.add_argument("--answer", action="store_true", help="Print the verification answer", required=False)
