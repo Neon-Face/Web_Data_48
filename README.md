@@ -5,12 +5,12 @@ Example with llama-2-7b.Q4_K_M.gguf model and input.txt in the CWD, attach them 
 
 CPU image:
 ```
-docker run --rm -v ./llama-2-7b.Q4_K_M.gguf:/llama-2-7b.Q4_K_M.gguf -v ./input.txt:/input.txt t348575/web_data_48:v0.1.1-cpu --model /llama-2-7b.Q4_K_M.gguf --input /input.txt
+docker run --rm -v ./llama-2-7b.Q4_K_M.gguf:/llama-2-7b.Q4_K_M.gguf -v ./input.txt:/input.txt t348575/web_data_48:v0.1.3-cpu --model /llama-2-7b.Q4_K_M.gguf --input /input.txt
 ```
 
 GPU image (nvidia):
 ```
-docker run --gpus=all --rm -v ./llama-2-7b.Q4_K_M.gguf:/llama-2-7b.Q4_K_M.gguf -v ./input.txt:/input.txt t348575/web_data_48:v0.1.1-gpu --model /llama-2-7b.Q4_K_M.gguf --input /input.txt --gpu
+docker run --gpus=all --rm -v ./llama-2-7b.Q4_K_M.gguf:/llama-2-7b.Q4_K_M.gguf -v ./input.txt:/input.txt t348575/web_data_48:v0.1.3-gpu --model /llama-2-7b.Q4_K_M.gguf --input /input.txt --gpu
 ```
 
 ## Direct
