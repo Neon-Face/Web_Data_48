@@ -7,3 +7,4 @@ nltk.download('punkt_tab')
 
 from sentence_transformers import SentenceTransformer
 model = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2')
+model_embedding = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')

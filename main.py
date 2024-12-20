@@ -74,7 +74,7 @@ else:
     print(psutil.virtual_memory().total)
     if psutil.virtual_memory().total / (1024 * 1024) > 8000:
         ctx_size = 4096
-llm = Llama(model_path=model_path, verbose=False, n_gpu_layers=-1 if args.gpu else 0, n_ctx=4096)
+llm = Llama(model_path=model_path, verbose=False, n_gpu_layers=-1 if args.gpu else 0, n_ctx=ctx_size)
 end = timer()
 
 if args.runtime:
@@ -99,9 +99,8 @@ def run_question(question_id, question):
     if args.runtime:
         print(f"Question LLM time: {end - start}")
 
-    question_processed = common.preprocess_text(question)
     question_entities = common.extract_entities(question, args.debug)
-    answer_entities = common.extract_entities(output_txt, args.debug)
+    answer_entities = common.extract_entities(common.remove_prefix(output_txt), args.debug)
     entities = list({t[0]: t for t in question_entities + answer_entities}.values())
 
     documents = []
@@ -132,7 +131,7 @@ def run_question(question_id, question):
     if len(documents) > 0:
         index.add(document_embeddings)
 
-    query_embedding = np.array(common.model_embedding.encode([question_processed], device="cuda" if args.gpu else "cpu"))
+    query_embedding = np.array(common.model_embedding.encode([question], device="cuda" if args.gpu else "cpu"))
     _, indices = index.search(query_embedding, 6)
 
     top_results = [documents[i] for i in indices[0]]
@@ -174,7 +173,7 @@ def run_question(question_id, question):
     if args.debug:
         print(context)
 
-    question_final = f"Using the context provided, answer the question. Question: {question}. Context: {context}. Answer:"
+    question_final = f"You are a helpful assistant trained to answer questions based on the given context. \nContext:\n{context}.\nQuestion:\n{question}.\nAnswer:"
     start_ask = timer()
     output = llm(
         question_final,
@@ -205,10 +204,10 @@ def run_question(question_id, question):
     if args.debug:
         print('Verification answer:', verification_output)
     start = timer()
-    answer = common.classify_response(question, common.remove_non_ascii(output_txt))
+    answer = common.classify_response(question, common.remove_prefix(common.remove_non_text(output_txt)))
     answer_entity = common.extract_relevant_entity(question, output_txt, args.debug)
 
-    verification_answer = common.classify_response(question, common.remove_non_ascii(verification_output))
+    verification_answer = common.classify_response(question, common.remove_prefix(common.remove_non_text(verification_output)))
     verification_answer_entity = common.extract_relevant_entity(question, verification_output, args.debug)
 
     if args.debug:

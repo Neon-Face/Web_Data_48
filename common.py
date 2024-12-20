@@ -1,7 +1,6 @@
 import re
 import requests
 from difflib import SequenceMatcher
-from spellchecker import SpellChecker
 import wikipediaapi
 import rake_nltk
 
@@ -152,60 +151,7 @@ def get_wikipedia_url(entity_id: str, wikidata) -> str:
 			return wikipedia_url
 	return ""
 
-spell = SpellChecker()
-
-CONTRACTION_MAP = {
-    "can't": "can not",
-    "won't": "will not",
-    "i'm": "i am",
-    "he's": "he is",
-    "she's": "she is",
-    "it's": "it is",
-    "they're": "they are",
-    "we're": "we are",
-    "we've":"we have",
-    "i've":"i have",
-    "you've":"you have"
-}
-
-keep_words = {"not","cannot"}
-
-def expand_contractions(text):
-    for contraction, expanded in CONTRACTION_MAP.items():
-        text = re.sub(r'\b' + re.escape(contraction) + r'\b', expanded, text, flags=re.IGNORECASE)
-    return text
-
-def correct_spelling(text):
-    corrected_words = []
-    doc = nlp(text)
-    for token in doc:
-        if token.ent_type_ or token.pos_ == "PROPN":
-            corrected_words.append(token.text)
-        else:
-            corrected_word = spell.correction(token.text) 
-            corrected_words.append(corrected_word if corrected_word else token.text)
-    return " ".join(corrected_words)
-
-def preprocess_text(text):
-	text = text.replace("‘", "'").replace("’", "'").replace("%"," percentage")
-	text = expand_contractions(text)
-	text = correct_spelling(text)
-	doc = nlp(text)
-	processed_tokens = []
-	for token in doc:
-		token_text = token.lemma_
-		if (not token.is_stop or token.text.lower() in keep_words
-            and not token.is_punct
-            and not token.is_space
-            and len(token_text) >= 1):
-			processed_tokens.append(token_text)
-
-	processed_text = " ".join(processed_tokens)
-	processed_text = re.sub(r'[^a-zA-Z0-9\s]', '', processed_text)
-	processed_text = processed_text.strip()
-	return processed_text
-
-def remove_non_ascii(data: str) -> str:
+def remove_non_text(data: str) -> str:
 	data = re.sub(r'[^a-zA-Z0-9\s]', '', data)
 	return data.strip()
 
@@ -223,7 +169,7 @@ def extract_relevant_sentences(large_text, query_text, context_size):
     query_tokens = set(query_text.lower().split())
     extracted_contexts = []
     for i, sentence in enumerate(sentences):
-        sentence_tokens = set(remove_non_ascii(sentence.lower()).split())
+        sentence_tokens = set(remove_non_text(sentence.lower()).split())
         overlap = query_tokens.intersection(sentence_tokens)
         if overlap:
             start_index = max(i - context_size, 0)
@@ -312,3 +258,6 @@ def fallback_relevant_entity(question: str, entities):
 			best_entity = entity
 
 	return best_entity
+
+def remove_prefix(data: str) -> str:
+	return re.sub(r'Answer:\s*$', '', data)
