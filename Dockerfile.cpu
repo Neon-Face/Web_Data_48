@@ -8,7 +8,9 @@ RUN uv pip install -r requirements-cpu.txt --index-strategy unsafe-best-match
 
 FROM python:3.10-slim-bookworm
 WORKDIR /app
+ARG NLTK_DATA=/root/nltk_data
 COPY --from=base /app/.venv .venv
+COPY --from=base /root/.cache /root/.cache
 COPY init.py init.py
 RUN .venv/bin/python init.py
 

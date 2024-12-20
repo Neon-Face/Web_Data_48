@@ -4,6 +4,9 @@ torch==2.5.1
 spacy==3.8.2
 nltk==3.9.1
 requests==2.32.3
-torch==2.5.1
 faiss-gpu-cu12==1.9.0.post1
+psutil==6.1.0
+numpy==1.26.4
+wikipedia-api==0.7.1
+rake-nltk==1.0.6
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85

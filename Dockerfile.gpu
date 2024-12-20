@@ -8,14 +8,16 @@ RUN pip install uv
 RUN uv venv
 ENV CUDA_DOCKER_ARCH=all
 ENV GGML_CUDA=1
-RUN CMAKE_ARGS="-DGGML_CUDA=ON" FORCE_CMAKE=1 uv pip install llama_cpp_python
+RUN CMAKE_ARGS="-DGGML_CUDA=ON" FORCE_CMAKE=1 uv pip install llama_cpp_python==0.3.2
 COPY requirements.txt requirements.txt
 RUN uv pip install -r requirements.txt
 
 FROM python:3.10-slim-bookworm
+ARG NLTK_DATA=/root/nltk_data
 WORKDIR /app
 COPY --from=base /app/.venv .venv
 COPY init.py init.py
+COPY --from=base /root/.cache /root/.cache
 RUN rm .venv/bin/python
 RUN ln -s /usr/local/bin/python .venv/bin/python
 RUN .venv/bin/python init.py

@@ -71,7 +71,6 @@ if args.gpu:
     if total / (1024 * 1024) > 8000:
         ctx_size = 4096
 else:
-    print(psutil.virtual_memory().total)
     if psutil.virtual_memory().total / (1024 * 1024) > 8000:
         ctx_size = 4096
 llm = Llama(model_path=model_path, verbose=False, n_gpu_layers=-1 if args.gpu else 0, n_ctx=ctx_size)
